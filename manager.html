@@ -90,8 +90,8 @@
 
                             //adding listener to the marker in order to add url to s3
                             marker.addListener('click', function () {
-                                //data.records[1].data[i].image
-                                window.open("https://s3-eu-west-1.amazonaws.com/drones-bucket/IMG_0001.jpg");
+                                window.open(data.records[j].data[i].image);
+                                //window.open("https://s3-eu-west-1.amazonaws.com/drones-bucket/IMG_0001.jpg");
                             });
 
                             //adding new lat long point to route

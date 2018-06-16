@@ -11,8 +11,7 @@
  * $_GET
  * QUERY - ?action=
  * actions:
- * &insertById=true&id=id&lat=lat&long=long&image=url
- *
+ * &insertById=true&id=id&lat=lat&long=long&time=time&image=url
  */
 
 
@@ -24,7 +23,6 @@
  */
 header('Content-type: application/json');
 header('Access-Control-Allow-Origin: *');
-
 /* my DB
  * coordination drone_id , time , lat , long
  * drone id  , color  , active , deleted
@@ -35,23 +33,23 @@ header('Access-Control-Allow-Origin: *');
 require_once("./includes/queries.php");
 require_once("./includes/DBConnector.php");
 
-
+//checking if request is vaild and init vars
 $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : false;
-
 $id = isset($_REQUEST['id']) && is_numeric($_REQUEST['id']) ? $_REQUEST['id'] : false;
 $lat = isset($_REQUEST['lat']) && is_numeric($_REQUEST['lat']) ? $_REQUEST['lat'] : false;
 $long = isset($_REQUEST['long']) && is_numeric($_REQUEST['long']) ? $_REQUEST['long'] : false;
 $image = isset($_REQUEST['image']) && $_REQUEST['image'] ? $_REQUEST['image'] : null;
 $name = isset($_REQUEST['name']) && $_REQUEST['name'] ? $_REQUEST['name'] : null;
 $color = isset($_REQUEST['color']) && $_REQUEST['color'] ? $_REQUEST['color'] : null;
-
+$time = isset($_REQUEST['time']) && $_REQUEST['time'] ? $_REQUEST['time'] : null;
 $result = null;
+
 
 if($action) {
     switch ($action){
         case 'insertById':
-            if(isset($id,$lat,$long)) {
-                insertById($id,$lat,$long, $image);
+            if(isset($id,$lat,$long,$time)) {
+                insertById($id,$lat,$long,$time, $image);
             }
             else {
                 echo 'missing params action or id' . PHP_EOL;
@@ -76,13 +74,13 @@ if($action) {
             break;
         default:
         case 'getAllDrones':
-        getAllDrones();
+            getAllDrones();
             break;
     }
 }
 
 /**
- *
+ *returns all drones in JSON object
  */
 function getAllDrones(){
 
@@ -108,21 +106,19 @@ function getAllDrones(){
     } else {
         echo "0 results";
     }
-
-
     echo json_encode($records);
-
 }
 
 /**
  * @param $id
  * @param $lat
  * @param $long
+ * @param $time
  * @param null $image
  */
-function insertById($id,$lat,$long, $image = null){
+function insertById($id,$lat,$long,$time , $image = null){
 
-    $time = time();
+
     $time = date("Y-m-d h:m:s",$time);
     $trueCounter = 0;
 
@@ -197,8 +193,6 @@ function insertDrone($color){
     echo json_encode($response);
 }
 
-
-
 function insertPilot($name){
     $connection = openCon();
 
@@ -213,4 +207,3 @@ function insertPilot($name){
     ];
     echo json_encode($response);
 }
-
