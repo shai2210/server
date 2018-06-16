@@ -42,14 +42,15 @@ $image = isset($_REQUEST['image']) && $_REQUEST['image'] ? $_REQUEST['image'] : 
 $name = isset($_REQUEST['name']) && $_REQUEST['name'] ? $_REQUEST['name'] : null;
 $color = isset($_REQUEST['color']) && $_REQUEST['color'] ? $_REQUEST['color'] : null;
 $time = isset($_REQUEST['time']) && $_REQUEST['time'] ? $_REQUEST['time'] : null;
+$lastTime = isset($_REQUEST['lastTs']) && $_REQUEST['lastTs'] ? $_REQUEST['lastTs'] : null;
 $result = null;
 
 
 if($action) {
     switch ($action){
         case 'insertById':
-            if(isset($id,$lat,$long,$time)) {
-                insertById($id,$lat,$long,$time, $image);
+            if(isset($id,$lat,$long)) {
+                insertById($id,$lat,$long, $image);
             }
             else {
                 echo 'missing params action or id' . PHP_EOL;
@@ -74,7 +75,7 @@ if($action) {
             break;
         default:
         case 'getAllDrones':
-            getAllDrones();
+            getAllDrones($lastTime);
             break;
     }
 }
@@ -82,11 +83,24 @@ if($action) {
 /**
  *returns all drones in JSON object
  */
-function getAllDrones(){
+function getAllDrones($lastTimeStamp){
 
     $connection = openCon();
+    $lastTimeStamp = date("Y-m-d h:m:s",$lastTimeStamp);
+    $query = "SELECT coor.drone_id,
+	    dr.color,
+       coor.time,
+       coor.lat,
+       coor.long,
+       ph.url
+FROM drone dr
+  JOIN coordination AS coor ON dr.id = coor.drone_id
+  LEFT JOIN photo ph ON coor.time = ph.time
+WHERE dr.active = 1
+AND   deleted = 0
+AND   coor.time >='". $lastTimeStamp ."'ORDER BY 1,3 ASC";
 
-    $result = $connection->query(SQL_SELECT_DRONES_DATA);
+    $result = $connection->query($query);
     $records = [
         "timestamp" => time()
     ];
@@ -96,15 +110,15 @@ function getAllDrones(){
         while($row = $result->fetch_assoc()) {
 
             $records['records'][$row['drone_id']]['data'][] = [
-                    "time" => $row['time'],
-                    "lat" => $row['lat'],
-                    "long" => $row['long'],
-                    "image" => $row['url']
+                "time" => $row['time'],
+                "lat" => $row['lat'],
+                "long" => $row['long'],
+                "image" => $row['url']
             ];
             $records['records'][$row['drone_id']]['color'] = $row['color'];
         }
     } else {
-        echo "0 results";
+        $records['records'] = [];
     }
     echo json_encode($records);
 }
@@ -116,9 +130,9 @@ function getAllDrones(){
  * @param $time
  * @param null $image
  */
-function insertById($id,$lat,$long,$time , $image = null){
+function insertById($id,$lat,$long, $image = null){
 
-
+    $time = time();
     $time = date("Y-m-d h:m:s",$time);
     $trueCounter = 0;
 
