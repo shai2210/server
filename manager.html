@@ -55,41 +55,40 @@
                 type: 'get',
                 success: function (data, textStatus, jQxhr) {
                     serverTimestamp = data.timestamp;
-                 //   debugger;
+
                         for (var j = 1; j <= Object.keys(data.records).length; j++) {
                             var flightCoordinates = [];
                             for (var i = 0; i < data.records[j].data.length; i++) {
-                               // debugger;
                                 //getting lat long from object
                                 var latLng = new google.maps.LatLng(parseFloat(data.records[j].data[i].lat), parseFloat(data.records[j].data[i].long));
                                 if(data.records[j].data[i].image != null) {
                                     //creating new marker
-                                    if (i == data.records[j].data.length - 1) {
-                                        var marker = new google.maps.Marker({
-                                            position: latLng,
-                                            map: map,
-                                            icon: {
-                                                url: 'drone.png',
-                                                scaledSize: new google.maps.Size(50, 50)
-                                            },
-                                            title: data.records[j].data[i].time
-                                        });
-                                    }
-                                    else {
-                                        var marker = new google.maps.Marker({
-                                            position: latLng,
-                                            map: map,
-                                            label: j.toString(),
-                                            img: data.records[j].data[i].image,
-                                            title: data.records[j].data[i].time
-                                        });
-
-                                    }
+                                    var marker = new google.maps.Marker({
+                                        position: latLng,
+                                        map: map,
+                                        label: j.toString(),
+                                        img: data.records[j].data[i].image,
+                                        title: data.records[j].data[i].time
+                                    });
 
                                     //adding listener to the marker in order to add url to s3
                                     marker.addListener('click', function () {
                                         window.open(this.img);
                                         //window.open("https://s3-eu-west-1.amazonaws.com/drones-bucket/IMG_0001.jpg");
+                                    });
+                                }
+
+                                //moving the drone image to latest position
+                                if (i == data.records[j].data.length - 1) {
+
+                                    var marker = new google.maps.Marker({
+                                        position: latLng,
+                                        map: map,
+                                        icon: {
+                                            url: 'drone.png',
+                                            scaledSize: new google.maps.Size(50, 50)
+                                        },
+                                        title: data.records[j].data[i].time
                                     });
                                 }
                                 //adding new lat long point to route
@@ -100,7 +99,6 @@
 
                                 //prepare to draw the route by the flightCoordinate array
                                 var flightPath = new google.maps.Polyline({
-
                                     path: flightCoordinates,
                                     geodesic: true,
                                     strokeColor: data.records[j].color,
@@ -109,10 +107,8 @@
                                 });
                                 //drawing the route
                                 flightPath.setMap(map);
-                                debugger;
                             }
                         }
-
                 },
                 error: function (jqXhr, textStatus, errorThrown) {
                     console.log(errorThrown);
@@ -120,6 +116,9 @@
             });
         };
     });
+    //http://18.207.210.26/delete.php?key=shaimalka123&action=deleteCoordination
+
+    //http://18.207.210.26/delete.php?key=shaimalka123&action=deleteImage
 </script>
 
 <script async defer
@@ -127,3 +126,4 @@
 </script>
 
 </html>
+
