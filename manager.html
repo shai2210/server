@@ -44,9 +44,10 @@
         });
     }
     $(document).ready(function(){
-        var refreshTimer = 5000; //refresh timer to the server
+        var refreshTimer = 2000; //refresh timer to the server
         var serverTimestamp=0;
         var lastCoor = [];
+        var lastMarker = [];
         var time=1;
         window.setInterval(getMarker , refreshTimer);
         function getMarker() {
@@ -59,10 +60,16 @@
                     serverTimestamp = data.timestamp;
 
                     for (var j = 1; j <= Object.keys(data.records).length; j++) {
-
+                        if(time!=1) {
+                            lastMarker[0].setMap(null);
+                            lastMarker.pop();
+                        }
 
                         var flightCoordinates = [];
                         for (var i = 0; i < data.records[j].data.length; i++) {
+                            //removing last draw
+
+
                             //getting lat long from object
                             var latLng = new google.maps.LatLng(parseFloat(data.records[j].data[i].lat), parseFloat(data.records[j].data[i].long));
                             if(data.records[j].data[i].image != null) {
@@ -74,6 +81,7 @@
                                     img: data.records[j].data[i].image,
                                     title: data.records[j].data[i].time
                                 });
+                               // marker.setMap(null);
 
                                 //adding listener to the marker in order to add url to s3
                                 marker.addListener('click', function () {
@@ -92,10 +100,11 @@
                                     map: map,
                                     icon: {
                                         url: 'drone.png',
-                                        scaledSize: new google.maps.Size(50, 50)
+                                        scaledSize: new google.maps.Size(40, 40)
                                     },
                                     title: data.records[j].data[i].time
                                 });
+                                lastMarker.push(marker);
                             }
 
                             //adding new lat long point to route
