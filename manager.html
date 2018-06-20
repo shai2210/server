@@ -35,17 +35,19 @@
 <script>
     var map;
 
+
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             zoom:10,
-            center: new google.maps.LatLng(14.474512,-90.880448),
+            center: new google.maps.LatLng(15.475412,-90.990448),
             mapTypeId: 'terrain'
         });
     }
     $(document).ready(function(){
-        var refreshTimer = 1000; //refresh timer to the server
+        var refreshTimer = 5000; //refresh timer to the server
         var serverTimestamp=0;
-
+        var lastCoor = [];
+        var time=1;
         window.setInterval(getMarker , refreshTimer);
         function getMarker() {
             //getting a object  of all drones
@@ -56,59 +58,75 @@
                 success: function (data, textStatus, jQxhr) {
                     serverTimestamp = data.timestamp;
 
-                        for (var j = 1; j <= Object.keys(data.records).length; j++) {
-                            var flightCoordinates = [];
-                            for (var i = 0; i < data.records[j].data.length; i++) {
-                                //getting lat long from object
-                                var latLng = new google.maps.LatLng(parseFloat(data.records[j].data[i].lat), parseFloat(data.records[j].data[i].long));
-                                if(data.records[j].data[i].image != null) {
-                                    //creating new marker
-                                    var marker = new google.maps.Marker({
-                                        position: latLng,
-                                        map: map,
-                                        label: j.toString(),
-                                        img: data.records[j].data[i].image,
-                                        title: data.records[j].data[i].time
-                                    });
+                    for (var j = 1; j <= Object.keys(data.records).length; j++) {
 
-                                    //adding listener to the marker in order to add url to s3
-                                    marker.addListener('click', function () {
-                                        window.open(this.img);
-                                        //window.open("https://s3-eu-west-1.amazonaws.com/drones-bucket/IMG_0001.jpg");
-                                    });
-                                }
 
-                                //moving the drone image to latest position
-                                if (i == data.records[j].data.length - 1) {
-
-                                    var marker = new google.maps.Marker({
-                                        position: latLng,
-                                        map: map,
-                                        icon: {
-                                            url: 'drone.png',
-                                            scaledSize: new google.maps.Size(50, 50)
-                                        },
-                                        title: data.records[j].data[i].time
-                                    });
-                                }
-                                //adding new lat long point to route
-                                flightCoordinates.push({
-                                    lat: parseFloat(data.records[j].data[i].lat),
-                                    lng: parseFloat(data.records[j].data[i].long)
+                        var flightCoordinates = [];
+                        for (var i = 0; i < data.records[j].data.length; i++) {
+                            //getting lat long from object
+                            var latLng = new google.maps.LatLng(parseFloat(data.records[j].data[i].lat), parseFloat(data.records[j].data[i].long));
+                            if(data.records[j].data[i].image != null) {
+                                //creating new marker
+                                var marker = new google.maps.Marker({
+                                    position: latLng,
+                                    map: map,
+                                    label: j.toString(),
+                                    img: data.records[j].data[i].image,
+                                    title: data.records[j].data[i].time
                                 });
 
-                                //prepare to draw the route by the flightCoordinate array
-                                var flightPath = new google.maps.Polyline({
-                                    path: flightCoordinates,
-                                    geodesic: true,
-                                    strokeColor: data.records[j].color,
-                                    strokeOpacity: 0.5,
-                                    strokeWeight: 5
+                                //adding listener to the marker in order to add url to s3
+                                marker.addListener('click', function () {
+                                    window.open(this.img);
+                                    //window.open("https://s3-eu-west-1.amazonaws.com/drones-bucket/IMG_0001.jpg");
                                 });
-                                //drawing the route
-                                flightPath.setMap(map);
                             }
+
+                            //moving the drone image to latest position
+                            if (i == data.records[j].data.length - 1) {
+
+                                lastCoor[j] = latLng;
+                               // debugger;
+                                var marker = new google.maps.Marker({
+                                    position: latLng,
+                                    map: map,
+                                    icon: {
+                                        url: 'drone.png',
+                                        scaledSize: new google.maps.Size(50, 50)
+                                    },
+                                    title: data.records[j].data[i].time
+                                });
+                            }
+
+                            //adding new lat long point to route
+                            //pushes the last point
+                            if(time != 1) {
+                                flightCoordinates.push({
+                                    lat: parseFloat(lastCoor[j].lat),
+                                    lng: parseFloat(lastCoor[j].long)
+                                });
+                            }
+                            //pushes the new point
+
+                            flightCoordinates.push({
+                                lat: parseFloat(data.records[j].data[i].lat),
+                                lng: parseFloat(data.records[j].data[i].long)
+                            });
+
+
+                            //prepare to draw the route by the flightCoordinate array
+                            var flightPath = new google.maps.Polyline({
+                                path: flightCoordinates,
+                                geodesic: true,
+                                strokeColor: data.records[j].color,
+                                strokeOpacity: 0.5,
+                                strokeWeight: 5
+                            });
+                            //drawing the route
+                            flightPath.setMap(map);
                         }
+                    }
+                    time=0;
                 },
                 error: function (jqXhr, textStatus, errorThrown) {
                     console.log(errorThrown);
