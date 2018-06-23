@@ -21,7 +21,7 @@
 
     </style>
 
-    <title>manager page</title>
+    <title>Manager page</title>
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,7 +34,7 @@
 
 <script>
     var map;
-
+    var first = true;
 
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
@@ -43,12 +43,12 @@
             mapTypeId: 'terrain'
         });
     }
+
     $(document).ready(function(){
-        var refreshTimer = 2000; //refresh timer to the server
+        var refreshTimer = 1000;
         var serverTimestamp=0;
-        var lastCoor = [];
-        var lastMarker = [];
-        var time=1;
+        var markersArray = [];
+        var lineArray = [];
         window.setInterval(getMarker , refreshTimer);
         function getMarker() {
             //getting a object  of all drones
@@ -57,13 +57,22 @@
                 dataType: 'json',
                 type: 'get',
                 success: function (data, textStatus, jQxhr) {
-                    serverTimestamp = data.timestamp;
+                    //serverTimestamp = data.timestamp;
+                    serverTimestamp = 0;
 
-                    for (var j = 1; j <= Object.keys(data.records).length; j++) {
-                        if(time!=1) {
-                            lastMarker[0].setMap(null);
-                            lastMarker.pop();
+                    if(Object.keys(data.records).length > 0){
+                        if(!first) {
+                            while(markersArray.length) {
+                                markersArray.pop().setMap(null);
+                            }
+                            while(lineArray.length) {
+                                lineArray.pop().setMap(null);
+                            }
                         }
+                        first = false;
+                    }
+
+                    for (var j in data.records) {
 
                         var flightCoordinates = [];
                         for (var i = 0; i < data.records[j].data.length; i++) {
@@ -81,20 +90,19 @@
                                     img: data.records[j].data[i].image,
                                     title: data.records[j].data[i].time
                                 });
-                               // marker.setMap(null);
 
                                 //adding listener to the marker in order to add url to s3
                                 marker.addListener('click', function () {
                                     window.open(this.img);
-                                    //window.open("https://s3-eu-west-1.amazonaws.com/drones-bucket/IMG_0001.jpg");
                                 });
+
+                                markersArray.push(marker);
                             }
 
                             //moving the drone image to latest position
                             if (i == data.records[j].data.length - 1) {
 
-                                lastCoor[j] = latLng;
-                               // debugger;
+                                // debugger;
                                 var marker = new google.maps.Marker({
                                     position: latLng,
                                     map: map,
@@ -104,19 +112,10 @@
                                     },
                                     title: data.records[j].data[i].time
                                 });
-                                lastMarker.push(marker);
+                                markersArray.push(marker);
                             }
 
-                            //adding new lat long point to route
-                            //pushes the last point
-                            if(time != 1) {
-                                flightCoordinates.push({
-                                    lat: parseFloat(lastCoor[j].lat),
-                                    lng: parseFloat(lastCoor[j].long)
-                                });
-                            }
                             //pushes the new point
-
                             flightCoordinates.push({
                                 lat: parseFloat(data.records[j].data[i].lat),
                                 lng: parseFloat(data.records[j].data[i].long)
@@ -131,21 +130,24 @@
                                 strokeOpacity: 0.5,
                                 strokeWeight: 5
                             });
+
+                            lineArray.push(flightPath);
                             //drawing the route
                             flightPath.setMap(map);
                         }
                     }
-                    time=0;
                 },
                 error: function (jqXhr, textStatus, errorThrown) {
                     console.log(errorThrown);
                 }
             });
-        };
+        }
     });
+
     //http://18.207.210.26/delete.php?key=shaimalka123&action=deleteCoordination
 
     //http://18.207.210.26/delete.php?key=shaimalka123&action=deleteImage
+
 </script>
 
 <script async defer
