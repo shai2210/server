@@ -59,7 +59,8 @@
                 success: function (data, textStatus, jQxhr) {
                     //serverTimestamp = data.timestamp;
                     serverTimestamp = 0;
-
+                    markersArray.reverse();
+                    lineArray.reverse();
                     if(Object.keys(data.records).length > 0){
                         if(!first) {
                             while(markersArray.length) {
