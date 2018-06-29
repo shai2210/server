@@ -26,6 +26,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="drone icon" type="image/png" href="images/favicon.png"/>
 </head>
 
 <body>
@@ -57,19 +58,14 @@
                 dataType: 'json',
                 type: 'get',
                 success: function (data, textStatus, jQxhr) {
-                    //serverTimestamp = data.timestamp;
                     serverTimestamp = 0;
-
+                    //cleans markers
                     if(Object.keys(data.records).length > 0){
                         if(!first) {
                             while(markersArray.length) {
                                 markersArray.pop().setMap(null);
                             }
-                            // while(lineArray.length) {
-                            //    lineArray.pop().setMap(null);
-                            //}
                         }
-                        //debugger;
                         first = false;
                     }
 
@@ -77,8 +73,6 @@
 
                         var flightCoordinates = [];
                         for (var i = 0; i < data.records[j].data.length; i++) {
-                            //removing last draw
-
 
                             //getting lat long from object
                             var latLng = new google.maps.LatLng(parseFloat(data.records[j].data[i].lat), parseFloat(data.records[j].data[i].long));
@@ -103,7 +97,6 @@
                             //moving the drone image to latest position
                             if (i == data.records[j].data.length - 1) {
 
-                                // debugger;
                                 var marker = new google.maps.Marker({
                                     position: latLng,
                                     map: map,
@@ -122,7 +115,6 @@
                                 lng: parseFloat(data.records[j].data[i].long)
                             });
 
-
                             //prepare to draw the route by the flightCoordinate array
                             var flightPath = new google.maps.Polyline({
                                 path: flightCoordinates,
@@ -131,8 +123,6 @@
                                 strokeOpacity: 0.1,
                                 strokeWeight: 5
                             });
-
-                            //lineArray.push(flightPath);
                             flightPath.setMap(map);
                         }
                     }
