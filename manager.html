@@ -38,7 +38,7 @@
 
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
-            zoom:10,
+            zoom:17,
             center: new google.maps.LatLng(15.475412,-90.990448),
             mapTypeId: 'terrain'
         });
@@ -59,17 +59,17 @@
                 success: function (data, textStatus, jQxhr) {
                     //serverTimestamp = data.timestamp;
                     serverTimestamp = 0;
-                    markersArray.reverse();
-                    lineArray.reverse();
+
                     if(Object.keys(data.records).length > 0){
                         if(!first) {
                             while(markersArray.length) {
                                 markersArray.pop().setMap(null);
                             }
-                            while(lineArray.length) {
-                                lineArray.pop().setMap(null);
-                            }
+                            // while(lineArray.length) {
+                            //    lineArray.pop().setMap(null);
+                            //}
                         }
+                        //debugger;
                         first = false;
                     }
 
@@ -108,7 +108,7 @@
                                     position: latLng,
                                     map: map,
                                     icon: {
-                                        url: 'drone.png',
+                                        url: 'images/drone.png',
                                         scaledSize: new google.maps.Size(40, 40)
                                     },
                                     title: data.records[j].data[i].time
@@ -132,8 +132,7 @@
                                 strokeWeight: 5
                             });
 
-                            lineArray.push(flightPath);
-                            //drawing the route
+                            //lineArray.push(flightPath);
                             flightPath.setMap(map);
                         }
                     }
@@ -144,11 +143,6 @@
             });
         }
     });
-
-    //http://18.207.210.26/delete.php?key=shaimalka123&action=deleteCoordination
-
-    //http://18.207.210.26/delete.php?key=shaimalka123&action=deleteImage
-
 </script>
 
 <script async defer
