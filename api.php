@@ -140,7 +140,7 @@ function insertById($id,$lat,$long, $image = null){
 
     $trueCounter += insertToCoor($id,$lat,$long,$time) ? 1 : 0;
 
-    $result = $trueCounter > 1 ? true : false;
+    $result = $trueCounter > 1;
 
     $response[] = [
         'success' => $result
@@ -167,7 +167,6 @@ function insertToCoor($id,$lat,$long,$time){
     }
     return $response;
 }
-
 /**
  * @param $id
  * @param $time
