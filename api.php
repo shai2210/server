@@ -1,5 +1,4 @@
 <?php
-
 /***
  * api.php
  * $_GET
@@ -13,8 +12,6 @@
  * actions:
  * &insertById=true&id=id&lat=lat&long=long&time=time&image=url
  */
-
-
 /**
  * Created by PhpStorm.
  * User: shai
@@ -32,7 +29,6 @@ header('Access-Control-Allow-Origin: *');
  */
 require_once("./includes/queries.php");
 require_once("./includes/DBConnector.php");
-
 //checking if request is vaild and init vars
 $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : false;
 $id = isset($_REQUEST['id']) && is_numeric($_REQUEST['id']) ? $_REQUEST['id'] : false;
@@ -44,8 +40,6 @@ $color = isset($_REQUEST['color']) && $_REQUEST['color'] ? $_REQUEST['color'] : 
 $time = isset($_REQUEST['time']) && $_REQUEST['time'] ? $_REQUEST['time'] : null;
 $lastTime = isset($_REQUEST['lastTs']) && $_REQUEST['lastTs'] ? $_REQUEST['lastTs'] : null;
 $result = null;
-
-
 if($action) {
     switch ($action){
         case 'insertById':
@@ -55,7 +49,6 @@ if($action) {
             else {
                 echo 'missing params action or id' . PHP_EOL;
             }
-
             break;
         case 'insertDrone':
             if(isset($color)){
@@ -64,14 +57,12 @@ if($action) {
                 echo 'missing color';
             }
             break;
-
         case 'insertPilot':
             if(isset($name)){
                 insertPilot($name);
             }else {
                 echo 'missing name';
             }
-
             break;
         default:
         case 'getAllDrones':
@@ -79,12 +70,10 @@ if($action) {
             break;
     }
 }
-
 /**
  *returns all drones in JSON object
  */
 function getAllDrones($lastTimeStamp){
-
     $connection = openCon();
     $lastTimeStamp = date("Y-m-d h:m:s",$lastTimeStamp);
     $query = "SELECT coor.drone_id,
@@ -99,16 +88,12 @@ FROM drone dr
 WHERE dr.active = 1
 AND   deleted = 0
 AND   coor.time >='". $lastTimeStamp ."'ORDER BY 1,3 ASC";
-
     $result = $connection->query($query);
     $records = [
         "timestamp" => time()
     ];
-
     if ($result->num_rows > 0) {
-
         while($row = $result->fetch_assoc()) {
-
             $records['records'][$row['drone_id']]['data'][] = [
                 "time" => $row['time'],
                 "lat" => $row['lat'],
@@ -122,7 +107,6 @@ AND   coor.time >='". $lastTimeStamp ."'ORDER BY 1,3 ASC";
     }
     echo json_encode($records);
 }
-
 /**
  * @param $id
  * @param $lat
@@ -131,24 +115,17 @@ AND   coor.time >='". $lastTimeStamp ."'ORDER BY 1,3 ASC";
  * @param null $image
  */
 function insertById($id,$lat,$long, $image = null){
-
     $time = time();
     $time = date("Y-m-d h:m:s",$time);
     $trueCounter = 0;
-
     $trueCounter += is_null($image) ? 1 : insertToImage($id,$time, $image) ? 1 : 0;
-
     $trueCounter += insertToCoor($id,$lat,$long,$time) ? 1 : 0;
-
-    $result = $trueCounter > 1;
-
+    $result = $trueCounter > 1 ? true : false;
     $response[] = [
         'success' => $result
     ];
-
     echo json_encode($response);
 }
-
 /**
  * @param $id
  * @param $lat
@@ -159,7 +136,6 @@ function insertById($id,$lat,$long, $image = null){
 function insertToCoor($id,$lat,$long,$time){
     $connection = openCon();
     $sql_coordination = "INSERT INTO coordination (`drone_id`, `time`, `lat`, `long`) VALUES (".$id. ","."'".$time."'". ",".$lat."," .$long.")";
-
     if (mysqli_query($connection, $sql_coordination)) {
         $response = true;
     } else {
@@ -175,9 +151,7 @@ function insertToCoor($id,$lat,$long,$time){
  */
 function insertToImage($id, $time, $image){
     $connection = openCon();
-
     $sql_image = "INSERT INTO photo (`drone_id`, `time`, `url`) VALUES (".$id. ","."'".$time."'". ","."'".$image."'".")";
-
     if (mysqli_query($connection, $sql_image)) {
         $response = true;
     } else {
@@ -185,14 +159,12 @@ function insertToImage($id, $time, $image){
     }
     return $response;
 }
-
 /**
  * @param $color
  * @return array
  */
 function insertDrone($color){
     $connection = openCon();
-
     $sql_drone = "INSERT INTO drone (`color`) VALUES ("."'".$color."'".")";
     if (mysqli_query($connection, $sql_drone)) {
         $result = true;
@@ -202,13 +174,10 @@ function insertDrone($color){
     $response[] = [
         'success' => $result
     ];
-
     echo json_encode($response);
 }
-
 function insertPilot($name){
     $connection = openCon();
-
     $sql_pilot = "INSERT INTO pilot (`name`) VALUES ("."'".$name."'".")";
     if (mysqli_query($connection, $sql_pilot)) {
         $result = true;
